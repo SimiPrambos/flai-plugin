@@ -136,6 +136,7 @@ mkdir -p lib/core/error
 mkdir -p lib/core/extensions
 mkdir -p lib/core/http
 mkdir -p lib/core/l10n
+mkdir -p lib/core/logging
 mkdir -p lib/core/router
 mkdir -p lib/features/counter/data/repositories
 mkdir -p lib/features/counter/domain/entities
@@ -233,12 +234,27 @@ Dio dio(DioRef ref) {
 }
 ```
 
+#### lib/core/logging/talker_provider.dart
+
+```dart
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+
+part 'talker_provider.g.dart';
+
+@Riverpod(keepAlive: true)
+Talker talker(TalkerRef ref) {
+  return TalkerFlutter.init();
+}
+```
+
 #### lib/core/providers.dart
 
 ```dart
 export 'config/env.dart';
 export 'error/failures.dart';
 export 'http/dio_provider.dart';
+export 'logging/talker_provider.dart';
 ```
 
 #### lib/core/router/router.dart
