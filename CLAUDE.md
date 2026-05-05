@@ -35,7 +35,6 @@ skills/
   material-theming/SKILL.md
   static-security/SKILL.md
   ui-package/SKILL.md
-  license-compliance/SKILL.md
   sdk-upgrade/SKILL.md
 ```
 

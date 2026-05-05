@@ -35,7 +35,6 @@ claude plugin install /path/to/flai-plugin
 | [**Material Theming**](skills/material-theming/SKILL.md) | Material 3 theming — `ColorScheme`, `TextTheme`, component themes, spacing systems, and light/dark mode |
 | [**Security**](skills/static-security/SKILL.md) | Flutter-specific static security — secrets management, `flutter_secure_storage`, certificate pinning, and OWASP Mobile Top 10 |
 | [**UI Package**](skills/ui-package/SKILL.md) | Reusable Flutter UI packages — custom widget libraries with `ThemeExtension` theming, barrel exports, and widget tests |
-| [**License Compliance**](skills/license-compliance/SKILL.md) | Dependency license auditing — permissive, copyleft, and unknown license categorization |
 | [**SDK Upgrade**](skills/sdk-upgrade/SKILL.md) | Dart and Flutter SDK version bumps — CI wildcard pinning, pubspec exact pinning, and upgrade workflow |
 
 ## Hooks
