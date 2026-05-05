@@ -134,6 +134,210 @@ dependencies:
     path: ../../packages/feature_auth
 ```
 
+## SOLID Principles
+
+Clean Architecture defines where files go; SOLID defines how to design classes and functions within those layers.
+
+### Single Responsibility Principle (SRP)
+
+Each class has one reason to change.
+
+**In flai architecture:**
+- One notifier manages one piece of state — `AuthNotifier` handles auth, `ProfileNotifier` handles profile
+- One repository handles one domain entity — `UserRepository` for users, `PostRepository` for posts
+- One widget does one thing — extract into smaller widgets when a widget grows beyond 100 lines
+
+**Example:**
+```dart
+// ❌ Violates SRP — notifier does API calls directly
+class SongsNotifier extends _$SongsNotifier {
+  @override
+  Future<List<Song>> build() async {
+    final dio = ref.watch(dioProvider);
+    final response = await dio.get('/songs');  // WRONG: notifier doing I/O
+    return (response.data as List).map((e) => Song.fromJson(e)).toList();
+  }
+}
+
+// ✅ Follows SRP — notifier delegates to repository
+class SongsNotifier extends _$SongsNotifier {
+  @override
+  Future<List<Song>> build() async {
+    final repo = ref.watch(songRepositoryProvider);
+    return (await repo.getSongs()).fold(
+      (failure) => throw failure,
+      (songs) => songs,
+    );
+  }
+}
+```
+
+### Open/Closed Principle (OCP)
+
+Open for extension, closed for modification.
+
+**In flai architecture:**
+- Use sealed classes for failures and states — add new variants without touching existing code
+- Use `@freezed` for immutable data — extend via `copyWith`, not mutation
+- Use strategy pattern via abstract interfaces when behavior varies
+
+**Example:**
+```dart
+// ✅ Open for extension — add new failure types without modifying existing code
+@freezed
+sealed class Failure with _$Failure {
+  const factory Failure.network({required String message}) = NetworkFailure;
+  const factory Failure.storage({required String message}) = StorageFailure;
+  // Add new failure types here without touching existing code
+}
+
+// ✅ Extend state via copyWith, not mutation
+final updatedUser = currentUser.copyWith(name: 'New Name');
+```
+
+### Liskov Substitution Principle (LSP)
+
+Subtypes must be substitutable for their base types without breaking behavior.
+
+**In flai architecture:**
+- Repository implementations must honor the domain interface contract
+- Never throw unexpected exception types from implementations
+- Return types must match exactly — if interface returns `Either<Failure, User>`, implementation cannot return `Either<Failure, dynamic>`
+
+**Example:**
+```dart
+// ✅ Implementation honors the contract
+abstract interface class UserRepository {
+  Future<Either<Failure, User>> getUser(String id);
+}
+
+class UserRepositoryImpl implements UserRepository {
+  @override
+  Future<Either<Failure, User>> getUser(String id) async {
+    // Always returns Either<Failure, User>, never throws
+    try {
+      final response = await _api.getUser(id);
+      return Right(response);
+    } catch (e) {
+      return Left(Failure.network(message: e.toString()));
+    }
+  }
+}
+
+// ❌ Violates LSP — throws instead of returning Either
+class BadUserRepositoryImpl implements UserRepository {
+  @override
+  Future<Either<Failure, User>> getUser(String id) async {
+    final response = await _api.getUser(id);  // WRONG: can throw
+    return Right(response);
+  }
+}
+```
+
+### Interface Segregation Principle (ISP)
+
+Don't force clients to depend on interfaces they don't use.
+
+**In flai architecture:**
+- Keep repository interfaces small — one per feature, not one giant repository
+- Don't add methods "just in case" — add them when actually needed
+- Split large interfaces into smaller, focused ones
+
+**Example:**
+```dart
+// ❌ Violates ISP — forces all clients to depend on methods they don't use
+abstract interface class UserRepository {
+  Future<Either<Failure, User>> getUser(String id);
+  Future<Either<Failure, User>> updateUser(User user);
+  Future<Either<Failure, void>> deleteUser(String id);
+  Future<Either<Failure, List<Post>>> getUserPosts(String id);  // WRONG: posts belong in PostRepository
+  Future<Either<Failure, List<Comment>>> getUserComments(String id);  // WRONG: comments belong in CommentRepository
+}
+
+// ✅ Follows ISP — small, focused interfaces
+abstract interface class UserRepository {
+  Future<Either<Failure, User>> getUser(String id);
+  Future<Either<Failure, User>> updateUser(User user);
+  Future<Either<Failure, void>> deleteUser(String id);
+}
+
+abstract interface class PostRepository {
+  Future<Either<Failure, List<Post>>> getPostsByUser(String userId);
+}
+
+abstract interface class CommentRepository {
+  Future<Either<Failure, List<Comment>>> getCommentsByUser(String userId);
+}
+```
+
+### Dependency Inversion Principle (DIP)
+
+Depend on abstractions, not concretions.
+
+**In flai architecture:**
+- Domain layer defines abstract interfaces (repositories)
+- Data layer implements them
+- Presentation depends on domain abstractions, never data layer directly
+- Use Riverpod providers to inject implementations
+
+**Example:**
+```dart
+// ✅ Domain defines abstraction
+// features/songs/domain/repositories/song_repository.dart
+abstract interface class SongRepository {
+  Future<Either<Failure, List<Song>>> getSongs();
+}
+
+// ✅ Data implements abstraction
+// features/songs/data/repositories/song_repository_impl.dart
+class SongRepositoryImpl implements SongRepository {
+  final SongRemoteDataSource _remote;
+  SongRepositoryImpl(this._remote);
+
+  @override
+  Future<Either<Failure, List<Song>>> getSongs() async {
+    // implementation
+  }
+}
+
+// ✅ Presentation depends on abstraction via provider
+// features/songs/presentation/notifiers/songs_notifier.dart
+@riverpod
+class SongsNotifier extends _$SongsNotifier {
+  @override
+  Future<List<Song>> build() async {
+    final repo = ref.watch(songRepositoryProvider);  // depends on abstraction
+    return (await repo.getSongs()).fold(
+      (failure) => throw failure,
+      (songs) => songs,
+    );
+  }
+}
+
+// ❌ Violates DIP — presentation depends on concrete implementation
+@riverpod
+class BadSongsNotifier extends _$BadSongsNotifier {
+  @override
+  Future<List<Song>> build() async {
+    final impl = SongRepositoryImpl(SongRemoteDataSource());  // WRONG: depends on concrete class
+    return (await impl.getSongs()).fold(
+      (failure) => throw failure,
+      (songs) => songs,
+    );
+  }
+}
+```
+
+## How SOLID Reinforces Clean Architecture
+
+| SOLID Principle | Clean Architecture Benefit |
+| --- | --- |
+| SRP | Each layer has one responsibility; each file within a layer has one job |
+| OCP | Add new features without modifying existing layers |
+| LSP | Repository implementations are interchangeable (mock in tests, real in prod) |
+| ISP | Small, focused repository interfaces per feature |
+| DIP | Domain layer is independent; data and presentation depend on it |
+
 ## Anti-Patterns
 
 | Anti-Pattern | Problem | Correct Approach |
