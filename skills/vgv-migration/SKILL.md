@@ -67,6 +67,7 @@ dependencies:
 
   # Networking
   dio:
+  retrofit:
 
   # Serialization
   freezed_annotation:
@@ -78,6 +79,7 @@ dependencies:
   # Storage
   shared_preferences:
   flutter_secure_storage:
+  isar:
 
   # Navigation
   go_router:
@@ -119,6 +121,12 @@ Run `flutter pub get` after updating.
 
 ### Step 2: Restructure lib/ Directory
 
+Remove the VGV flat structure first:
+```bash
+rm -rf lib/app
+rm -rf lib/counter
+```
+
 Create the flai directory structure:
 
 ```bash
@@ -137,12 +145,6 @@ mkdir -p lib/features/counter/presentation/notifiers
 mkdir -p lib/features/counter/presentation/pages
 mkdir -p lib/features/counter/presentation/widgets
 mkdir -p lib/app
-```
-
-Remove the VGV flat structure:
-```bash
-rm -rf lib/app
-rm -rf lib/counter
 ```
 
 ### Step 3: Implement Core Layer
@@ -207,20 +209,24 @@ import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 
+import '../config/env.dart';
+
 part 'dio_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 Dio dio(DioRef ref) {
   final dio = Dio(
     BaseOptions(
-      baseUrl: const String.fromEnvironment('API_BASE_URL'),
+      baseUrl: Env.apiBaseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
     ),
   );
 
   dio.interceptors.add(
-    TalkerDioLogger(),
+    TalkerDioLogger(
+      talker: ref.watch(talkerProvider),
+    ),
   );
 
   return dio;
@@ -238,13 +244,15 @@ export 'http/dio_provider.dart';
 #### lib/core/router/router.dart
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/counter/presentation/pages/counter_page.dart';
 
-final routerProvider = Provider<GoRouter>((ref) {
+part 'router.g.dart';
+
+@Riverpod(keepAlive: true)
+GoRouter goRouter(GoRouterRef ref) {
   return GoRouter(
     routes: [
       GoRoute(
@@ -253,7 +261,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-});
+}
 ```
 
 ### Step 4: Implement App Shell
@@ -271,7 +279,7 @@ class App extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(routerProvider);
+    final router = ref.watch(goRouterProvider);
 
     return MaterialApp.router(
       title: 'flai Starter',
@@ -321,12 +329,11 @@ class CounterState with _$CounterState {
 
 ```dart
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../../../core/error/failures.dart';
 
 part 'counter_failure.freezed.dart';
 
 @freezed
-sealed class CounterFailure extends Failure with _$CounterFailure {
+sealed class CounterFailure with _$CounterFailure {
   const factory CounterFailure.overflow({
     required String message,
   }) = CounterOverflowFailure;
@@ -352,10 +359,13 @@ abstract interface class CounterRepository {
 
 ```dart
 import 'package:fpdart/fpdart.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/counter_state.dart';
 import '../../domain/repositories/counter_repository.dart';
+
+part 'counter_repository_impl.g.dart';
 
 class CounterRepositoryImpl implements CounterRepository {
   @override
@@ -373,6 +383,11 @@ class CounterRepositoryImpl implements CounterRepository {
     return Right(const CounterState(count: 0));
   }
 }
+
+@Riverpod(keepAlive: true)
+CounterRepository counterRepository(CounterRepositoryRef ref) {
+  return CounterRepositoryImpl();
+}
 ```
 
 #### lib/features/counter/presentation/notifiers/counter_notifier.dart
@@ -380,6 +395,7 @@ class CounterRepositoryImpl implements CounterRepository {
 ```dart
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../data/repositories/counter_repository_impl.dart';
 import '../../domain/entities/counter_state.dart';
 
 part 'counter_notifier.g.dart';
@@ -389,18 +405,31 @@ class CounterNotifier extends _$CounterNotifier {
   @override
   CounterState build() => const CounterState(count: 0);
 
-  void increment() {
-    final current = state.count;
-    state = CounterState(count: current + 1);
+  Future<void> increment() async {
+    final repo = ref.read(counterRepositoryProvider);
+    final result = await repo.increment(state.count);
+    result.match(
+      (l) => {/* handle failure */},
+      (r) => state = r,
+    );
   }
 
-  void decrement() {
-    final current = state.count;
-    state = CounterState(count: current - 1);
+  Future<void> decrement() async {
+    final repo = ref.read(counterRepositoryProvider);
+    final result = await repo.decrement(state.count);
+    result.match(
+      (l) => {/* handle failure */},
+      (r) => state = r,
+    );
   }
 
-  void reset() {
-    state = const CounterState(count: 0);
+  Future<void> reset() async {
+    final repo = ref.read(counterRepositoryProvider);
+    final result = await repo.reset();
+    result.match(
+      (l) => {/* handle failure */},
+      (r) => state = r,
+    );
   }
 }
 ```
