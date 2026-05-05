@@ -211,6 +211,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 
 import '../config/env.dart';
+import '../logging/talker_provider.dart';
 
 part 'dio_provider.g.dart';
 
