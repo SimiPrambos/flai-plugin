@@ -36,6 +36,7 @@ skills/
   static-security/SKILL.md
   ui-package/SKILL.md
   sdk-upgrade/SKILL.md
+  vgv-migration/SKILL.md
 ```
 
 ## Skill File Format

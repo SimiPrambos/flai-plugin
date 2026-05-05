@@ -36,6 +36,7 @@ claude plugin install /path/to/flai-plugin
 | [**Security**](skills/static-security/SKILL.md) | Flutter-specific static security — secrets management, `flutter_secure_storage`, certificate pinning, and OWASP Mobile Top 10 |
 | [**UI Package**](skills/ui-package/SKILL.md) | Reusable Flutter UI packages — custom widget libraries with `ThemeExtension` theming, barrel exports, and widget tests |
 | [**SDK Upgrade**](skills/sdk-upgrade/SKILL.md) | Dart and Flutter SDK version bumps — CI wildcard pinning, pubspec exact pinning, and upgrade workflow |
+| [**VGV Migration**](skills/vgv-migration/SKILL.md) | Migrate a VeryGood CLI scaffold to flai standards — refactors Bloc→Riverpod, flat→Clean Architecture, generates CLAUDE.md enforcement contract |
 
 ## Hooks
 
