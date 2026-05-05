@@ -44,8 +44,8 @@
     "theming",
     "typed-go-route",
     "ui-package",
-    "vgv-migration",
     "very-good-cli",
+    "vgv-migration",
     "wcag",
     "widget-testing"
   ]
