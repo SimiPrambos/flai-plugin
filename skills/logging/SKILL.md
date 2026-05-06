@@ -42,9 +42,19 @@ Talker talker(TalkerRef ref) {
 
 ## Wiring in main.dart
 
+The app bootstrap is the single source of truth for logger wiring. Every flai app's `main.dart` follows this exact shape — it initializes Talker once, attaches the Riverpod observer to the `ProviderScope`, and overrides `talkerProvider` so every other layer (Dio, GoRouter, Notifiers) receives the same instance.
+
 ```dart
 // lib/main.dart
-void main() async {
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:talker_riverpod_logger/talker_riverpod_logger.dart';
+
+import 'app/app.dart';
+import 'core/logging/talker_provider.dart';
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final talker = TalkerFlutter.init();
 
@@ -56,7 +66,7 @@ void main() async {
           settings: const TalkerRiverpodLoggerSettings(
             printProviderAdded: true,
             printProviderUpdated: true,
-            printProviderDisposed: false,  // reduce noise
+            printProviderDisposed: false,
             printProviderFailed: true,
           ),
         ),
@@ -69,6 +79,43 @@ void main() async {
   );
 }
 ```
+
+Why each piece matters:
+
+| Wiring | Effect if missing |
+| --- | --- |
+| `TalkerFlutter.init()` before `runApp` | App boots, but no Talker instance exists for the first frame's logs |
+| `TalkerRiverpodObserver` in `observers:` | Provider lifecycle events (added, updated, failed) silently disappear |
+| `talkerProvider.overrideWithValue(talker)` | Every consumer of `talkerProvider` would otherwise create its own Talker, losing log unification |
+| `TalkerRouteObserver` on GoRouter (see Router section) | Navigation events disappear — hard to debug deep links |
+| `TalkerDioLogger` on Dio (see Dio section) | HTTP requests/responses disappear from logs |
+
+## Debug Menu — TalkerScreen Route
+
+Expose the in-app log viewer in debug builds via a dedicated route:
+
+```dart
+// core/router/router.dart (excerpt — full router lives in flai-navigation)
+import 'package:flutter/foundation.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+
+@TypedGoRoute<TalkerScreenRoute>(
+  name: 'talkerLogs',
+  path: '/debug/logs',
+)
+@immutable
+class TalkerScreenRoute extends GoRouteData {
+  const TalkerScreenRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    final talker = TalkerFlutter.init();
+    return TalkerScreen(talker: talker);
+  }
+}
+```
+
+Gate this route behind `kDebugMode` if you want to hide it in release builds. Surface a navigation entry from a developer settings page or a long-press gesture on the main app bar.
 
 ## Dio Integration
 
