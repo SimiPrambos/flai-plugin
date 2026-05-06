@@ -3,7 +3,7 @@
 > Stop reviewing AI-generated Flutter code that ignores your team's architecture. flai-plugin teaches Claude Code your stack — and enforces it on every edit.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.0-brightgreen.svg)](https://github.com/SimiPrambos/flai-plugin/releases)
+[![Version](https://img.shields.io/badge/version-0.2.0-brightgreen.svg)](https://github.com/SimiPrambos/flai-plugin/releases)
 [![Flutter](https://img.shields.io/badge/Flutter-Standards-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-Plugin-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-Plugin-D97757)](https://claude.ai/code)
@@ -31,7 +31,7 @@ flai-plugin ships a curated Flutter stack to Claude Code as **enforceable** rule
 3. **Enforced, not suggested** — `dart analyze` runs after every edit and **blocks** on failure; `dart format` normalizes style automatically
 4. **Team alignment** — every developer's Claude Code produces the same shape of code for the same prompt
 5. **Scoped, low token cost** — skills load only when relevant; you don't pay tokens for accessibility rules while writing networking code
-6. **Migration-friendly** — refactor an existing `very_good create` scaffold to flai standards in one prompt
+6. **Migration-friendly** — refactor an existing `very_good create` scaffold into a battery-included flai starter (working `posts` demo, full logger wiring, Material 3 theme) in one prompt
 
 ## ⚙️ How It Works
 
@@ -69,7 +69,7 @@ Then open a Flutter project and ask Claude — relevant skills auto-engage.
 
 ```
 Scaffold a login feature with Riverpod and a fake repository
-Migrate this VGV project to the flai stack
+Migrate this VGV project to the flai stack with a working posts demo
 Add an authenticated Dio client with retry on 401
 Write golden tests for the OnboardingPage
 ```
