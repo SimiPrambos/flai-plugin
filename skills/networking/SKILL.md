@@ -138,7 +138,7 @@ part 'connectivity_interceptor.g.dart';
 ConnectivityInterceptor connectivityInterceptor(
   ConnectivityInterceptorRef ref,
 ) {
-  return ConnectivityInterceptor(ref.watch(connectivityProvider.notifier));
+  return ConnectivityInterceptor(ref.watch(connectivityInstanceProvider));
 }
 
 class ConnectivityInterceptor extends Interceptor {
