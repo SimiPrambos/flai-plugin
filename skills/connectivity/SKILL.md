@@ -27,9 +27,18 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'connectivity_provider.g.dart';
 
+/// Singleton `Connectivity` instance for direct calls (e.g. interceptors,
+/// one-off checks). Use this when you need to call `checkConnectivity()`
+/// imperatively rather than subscribe to changes.
+@Riverpod(keepAlive: true)
+Connectivity connectivityInstance(ConnectivityInstanceRef ref) =>
+    Connectivity();
+
+/// Reactive stream of connectivity changes. Subscribe in widgets that
+/// need to rebuild when the network status changes.
 @Riverpod(keepAlive: true)
 Stream<List<ConnectivityResult>> connectivity(ConnectivityRef ref) =>
-    Connectivity().onConnectivityChanged;
+    ref.watch(connectivityInstanceProvider).onConnectivityChanged;
 
 bool isOnline(List<ConnectivityResult> result) =>
     result.isNotEmpty && !result.contains(ConnectivityResult.none);
