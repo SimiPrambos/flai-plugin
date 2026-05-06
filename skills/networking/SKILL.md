@@ -29,29 +29,32 @@ import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 
+import '../config/env.dart';
+import '../logging/talker_provider.dart';
+import 'connectivity_interceptor.dart';
+
 part 'dio_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 Dio dio(DioRef ref) {
   final talker = ref.watch(talkerProvider);
-  final dio = Dio(
+
+  return Dio(
     BaseOptions(
       baseUrl: Env.apiBaseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 30),
     ),
-  );
-  dio.interceptors.addAll([
-    TalkerDioLogger(
-      talker: talker,
-      settings: const TalkerDioLoggerSettings(
-        printRequestHeaders: false,
-        printResponseMessage: true,
+  )..interceptors.addAll([
+      TalkerDioLogger(
+        talker: talker,
+        settings: const TalkerDioLoggerSettings(
+          printRequestHeaders: false,
+          printResponseMessage: true,
+        ),
       ),
-    ),
-    ref.watch(connectivityInterceptorProvider),
-  ]);
-  return dio;
+      ref.watch(connectivityInterceptorProvider),
+    ]);
 }
 ```
 
