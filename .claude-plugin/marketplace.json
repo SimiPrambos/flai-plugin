@@ -1,0 +1,29 @@
+{
+  "name": "flai-marketplace",
+  "owner": {
+    "name": "Silmi Kaffah",
+    "email": "emsilmikaffah@gmail.com",
+    "url": "https://github.com/SimiPrambos"
+  },
+  "metadata": {
+    "description": "flai Flutter standards marketplace",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "flai-plugin",
+      "description": "Best-practice skills for Flutter development with Clean Architecture, Riverpod, and the flai standard tech stack — plus automated dart analyze and format hooks.",
+      "version": "0.1.0",
+      "source": {
+        "source": "github",
+        "repo": "SimiPrambos/flai-plugin"
+      },
+      "repository": "https://github.com/SimiPrambos/flai-plugin",
+      "homepage": "https://github.com/SimiPrambos/flai-plugin",
+      "author": {
+        "name": "Silmi Kaffah",
+        "email": "m_silmi_kaffah@ajari.live"
+      }
+    }
+  ]
+}

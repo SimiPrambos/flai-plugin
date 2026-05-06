@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "description": "Best-practice skills for Flutter development with Clean Architecture, Riverpod, and the flai standard tech stack — plus automated dart analyze and format hooks.",
   "license": "MIT",
+  "author": {
+    "name": "Silmi Kaffah",
+    "email": "emsilmikaffah@gmail.com"
+  },
   "keywords": [
     "accessibility",
     "analyze",
