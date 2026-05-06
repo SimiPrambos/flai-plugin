@@ -31,10 +31,14 @@ Centralize all color definitions in a dedicated class:
 
 ```dart
 abstract class AppColors {
-  static const primaryColor = Color(0xFF4F46E5);
-  static const secondaryColor = Color(0xFF9C27B0);
-  static const errorColor = Color(0xFFDC2626);
-  static const surfaceColor = Color(0xFFFAFAFA);
+  static const Color primaryColor = Color(0xFF4F46E5);
+  static const Color secondaryColor = Color(0xFF9C27B0);
+  static const Color errorColor = Color(0xFFDC2626);
+  static const Color surfaceColor = Color(0xFFFAFAFA);
+
+  // Dark theme variants
+  static const Color primaryColorDark = Color(0xFF6366F1);
+  static const Color surfaceColorDark = Color(0xFF1F1F1F);
 }
 ```
 
